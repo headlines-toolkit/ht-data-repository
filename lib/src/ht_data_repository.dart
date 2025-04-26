@@ -1,5 +1,9 @@
+//
+// ignore_for_file: lines_longer_than_80_chars
+
 import 'package:ht_data_client/ht_data_client.dart';
-import 'package:ht_http_client/ht_http_client.dart' show HtHttpException;
+import 'package:ht_http_client/ht_http_client.dart'
+    show BadRequestException, HtHttpException, NotFoundException;
 
 /// {@template ht_data_repository}
 /// A generic repository that acts as an abstraction layer over an [HtDataClient].
@@ -65,7 +69,10 @@ class HtDataRepository<T> {
   /// Re-throws any [HtHttpException] or [FormatException] from the client.
   Future<List<T>> readAll({String? startAfterId, int? limit}) async {
     try {
-      return await _dataClient.readAll(startAfterId: startAfterId, limit: limit);
+      return await _dataClient.readAll(
+        startAfterId: startAfterId,
+        limit: limit,
+      );
     } on HtHttpException {
       rethrow;
     } on FormatException {
