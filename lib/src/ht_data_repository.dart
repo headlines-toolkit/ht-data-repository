@@ -4,6 +4,7 @@
 import 'package:ht_data_client/ht_data_client.dart';
 import 'package:ht_http_client/ht_http_client.dart'
     show BadRequestException, HtHttpException, NotFoundException;
+import 'package:ht_shared/ht_shared.dart';
 
 /// {@template ht_data_repository}
 /// A generic repository that acts as an abstraction layer over an [HtDataClient].
@@ -30,12 +31,14 @@ class HtDataRepository<T> {
 
   /// Creates a new resource item of type [T] by delegating to the client.
   ///
-  /// Returns the created item.
+  /// Unwraps the [SuccessApiResponse] from the client and returns the
+  /// created item of type [T].
   ///
   /// Re-throws any [HtHttpException] or [FormatException] from the client.
   Future<T> create(T item) async {
     try {
-      return await _dataClient.create(item);
+      final response = await _dataClient.create(item);
+      return response.data;
     } on HtHttpException {
       rethrow; // Propagate client-level HTTP exceptions
     } on FormatException {
@@ -47,13 +50,15 @@ class HtDataRepository<T> {
 
   /// Reads a single resource item of type [T] by its unique [id] via the client.
   ///
-  /// Returns the deserialized item.
+  /// Unwraps the [SuccessApiResponse] from the client and returns the
+  /// deserialized item of type [T].
   ///
   /// Re-throws any [HtHttpException] (like [NotFoundException]) or
   /// [FormatException] from the client.
   Future<T> read(String id) async {
     try {
-      return await _dataClient.read(id);
+      final response = await _dataClient.read(id);
+      return response.data;
     } on HtHttpException {
       rethrow;
     } on FormatException {
@@ -64,15 +69,21 @@ class HtDataRepository<T> {
   /// Reads all resource items of type [T] via the client.
   ///
   /// Supports pagination using [startAfterId] and [limit].
-  /// Returns a list of deserialized items.
+  /// Unwraps the [SuccessApiResponse] from the client and returns the
+  /// [PaginatedResponse] containing the list of deserialized items and
+  /// pagination details.
   ///
   /// Re-throws any [HtHttpException] or [FormatException] from the client.
-  Future<List<T>> readAll({String? startAfterId, int? limit}) async {
+  Future<PaginatedResponse<T>> readAll({
+    String? startAfterId,
+    int? limit,
+  }) async {
     try {
-      return await _dataClient.readAll(
+      final response = await _dataClient.readAll(
         startAfterId: startAfterId,
         limit: limit,
       );
+      return response.data;
     } on HtHttpException {
       rethrow;
     } on FormatException {
@@ -83,21 +94,24 @@ class HtDataRepository<T> {
   /// Reads multiple resource items of type [T] based on a [query] via the client.
   ///
   /// Supports pagination using [startAfterId] and [limit].
-  /// Returns a list of deserialized items matching the query.
+  /// Unwraps the [SuccessApiResponse] from the client and returns the
+  /// [PaginatedResponse] containing the list of deserialized items matching
+  /// the query and pagination details.
   ///
   /// Re-throws any [HtHttpException] (like [BadRequestException]) or
   /// [FormatException] from the client.
-  Future<List<T>> readAllByQuery(
+  Future<PaginatedResponse<T>> readAllByQuery(
     Map<String, dynamic> query, {
     String? startAfterId,
     int? limit,
   }) async {
     try {
-      return await _dataClient.readAllByQuery(
+      final response = await _dataClient.readAllByQuery(
         query,
         startAfterId: startAfterId,
         limit: limit,
       );
+      return response.data;
     } on HtHttpException {
       rethrow;
     } on FormatException {
@@ -107,13 +121,15 @@ class HtDataRepository<T> {
 
   /// Updates an existing resource item of type [T] identified by [id] via the client.
   ///
-  /// Returns the updated item.
+  /// Unwraps the [SuccessApiResponse] from the client and returns the
+  /// updated item of type [T].
   ///
   /// Re-throws any [HtHttpException] (like [NotFoundException]) or
   /// [FormatException] from the client.
   Future<T> update(String id, T item) async {
     try {
-      return await _dataClient.update(id, item);
+      final response = await _dataClient.update(id, item);
+      return response.data;
     } on HtHttpException {
       rethrow;
     } on FormatException {
