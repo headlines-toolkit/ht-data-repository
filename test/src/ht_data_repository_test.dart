@@ -2,9 +2,10 @@
 // ignore_for_file: lines_longer_than_80_chars, avoid_equals_and_hash_code_on_mutable_classes
 
 import 'package:ht_data_client/ht_data_client.dart';
-import 'package:ht_data_repository/src/ht_data_repository.dart';
+import 'package:ht_data_repository/ht_data_repository.dart';
 import 'package:ht_http_client/ht_http_client.dart'
     show BadRequestException, HtHttpException, NotFoundException;
+import 'package:ht_shared/ht_shared.dart'; // Import shared models
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -41,11 +42,24 @@ void main() {
     // Dummy data instances for testing
     const mockId = 'test-id-123';
     const mockItem = _MockData(id: mockId, value: 'Test Item');
+    const mockSuccessResponseItem = SuccessApiResponse(data: mockItem);
     const updatedMockItem = _MockData(id: mockId, value: 'Updated Item');
+    const mockSuccessResponseUpdatedItem =
+        SuccessApiResponse(data: updatedMockItem);
     final mockItemsList = [
       const _MockData(id: 'id1', value: 'Item 1'),
       const _MockData(id: 'id2', value: 'Item 2'),
     ];
+    // Helper for paginated responses
+    final mockPaginatedResponse = PaginatedResponse(
+      items: mockItemsList,
+      cursor: null, // Assuming no cursor for these basic tests
+      hasMore: false, // Assuming no more items for these basic tests
+    );
+    final mockSuccessResponseList = SuccessApiResponse(
+      data: mockPaginatedResponse,
+    );
+
     final mockQuery = {'category': 'test'};
     const mockHttpException = NotFoundException('Item not found');
     const mockFormatException = FormatException('Invalid data format');
@@ -63,15 +77,18 @@ void main() {
     // --- Test Cases ---
 
     group('create', () {
-      test('should call client.create and return the created item', () async {
+      test(
+          'should call client.create and return the SuccessApiResponse '
+          'containing the created item', () async {
         // Arrange
         when(() => mockDataClient.create(any()))
-            .thenAnswer((_) async => mockItem);
+            .thenAnswer((_) async => mockSuccessResponseItem);
 
         // Act
         final result = await repository.create(mockItem);
 
         // Assert
+        // Repository now returns the unwrapped item
         expect(result, equals(mockItem));
         verify(() => mockDataClient.create(mockItem)).called(1);
       });
@@ -104,15 +121,18 @@ void main() {
     });
 
     group('read', () {
-      test('should call client.read and return the item', () async {
+      test(
+          'should call client.read and return the SuccessApiResponse '
+          'containing the item', () async {
         // Arrange
         when(() => mockDataClient.read(any()))
-            .thenAnswer((_) async => mockItem);
+            .thenAnswer((_) async => mockSuccessResponseItem);
 
         // Act
         final result = await repository.read(mockId);
 
         // Assert
+        // Repository now returns the unwrapped item
         expect(result, equals(mockItem));
         verify(() => mockDataClient.read(mockId)).called(1);
       });
@@ -143,21 +163,25 @@ void main() {
     });
 
     group('readAll', () {
-      test('should call client.readAll and return a list of items', () async {
+      test(
+          'should call client.readAll and return SuccessApiResponse '
+          'containing PaginatedResponse', () async {
         // Arrange
         when(
           () => mockDataClient.readAll(
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((_) async => mockItemsList);
+        ).thenAnswer((_) async => mockSuccessResponseList);
 
         // Act
         final result =
             await repository.readAll(startAfterId: 'lastId', limit: 10);
 
         // Assert
-        expect(result, equals(mockItemsList));
+        // Repository now returns the unwrapped PaginatedResponse
+        expect(result, equals(mockPaginatedResponse));
+        expect(result.items, equals(mockItemsList)); // Check items within
         verify(() => mockDataClient.readAll(startAfterId: 'lastId', limit: 10))
             .called(1);
       });
@@ -169,13 +193,15 @@ void main() {
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((_) async => mockItemsList);
+        ).thenAnswer((_) async => mockSuccessResponseList);
 
         // Act
         final result = await repository.readAll();
 
         // Assert
-        expect(result, equals(mockItemsList));
+        // Repository now returns the unwrapped PaginatedResponse
+        expect(result, equals(mockPaginatedResponse));
+        expect(result.items, equals(mockItemsList)); // Check items within
         verify(() => mockDataClient.readAll(startAfterId: null, limit: null))
             .called(1);
       });
@@ -220,8 +246,9 @@ void main() {
     });
 
     group('readAllByQuery', () {
-      test('should call client.readAllByQuery and return a list of items',
-          () async {
+      test(
+          'should call client.readAllByQuery and return SuccessApiResponse '
+          'containing PaginatedResponse', () async {
         // Arrange
         when(
           () => mockDataClient.readAllByQuery(
@@ -229,7 +256,7 @@ void main() {
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((_) async => mockItemsList);
+        ).thenAnswer((_) async => mockSuccessResponseList);
 
         // Act
         final result = await repository.readAllByQuery(
@@ -239,7 +266,9 @@ void main() {
         );
 
         // Assert
-        expect(result, equals(mockItemsList));
+        // Repository now returns the unwrapped PaginatedResponse
+        expect(result, equals(mockPaginatedResponse));
+        expect(result.items, equals(mockItemsList)); // Check items within
         verify(
           () => mockDataClient.readAllByQuery(
             mockQuery,
@@ -258,13 +287,15 @@ void main() {
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((_) async => mockItemsList);
+        ).thenAnswer((_) async => mockSuccessResponseList);
 
         // Act
         final result = await repository.readAllByQuery(mockQuery);
 
         // Assert
-        expect(result, equals(mockItemsList));
+        // Repository now returns the unwrapped PaginatedResponse
+        expect(result, equals(mockPaginatedResponse));
+        expect(result.items, equals(mockItemsList)); // Check items within
         verify(
           () => mockDataClient.readAllByQuery(
             mockQuery,
@@ -327,15 +358,18 @@ void main() {
     });
 
     group('update', () {
-      test('should call client.update and return the updated item', () async {
+      test(
+          'should call client.update and return the SuccessApiResponse '
+          'containing the updated item', () async {
         // Arrange
         when(() => mockDataClient.update(any(), any()))
-            .thenAnswer((_) async => updatedMockItem);
+            .thenAnswer((_) async => mockSuccessResponseUpdatedItem);
 
         // Act
         final result = await repository.update(mockId, mockItem);
 
         // Assert
+        // Repository now returns the unwrapped item
         expect(result, equals(updatedMockItem));
         verify(() => mockDataClient.update(mockId, mockItem)).called(1);
       });
