@@ -33,9 +33,9 @@ dependencies:
 
 ## Features
 
-*   **Abstraction:** Provides a clean interface for data operations, hiding the underlying `HtDataClient` implementation details.
-*   **CRUD Operations:** Supports standard Create, Read, Update, and Delete operations for a generic type `T`.
-*   **Querying:** Allows reading multiple items based on a query map, with support for pagination.
+*   **Abstraction:** Provides a clean interface for data operations, hiding the underlying `HtDataClient` implementation details and the `SuccessApiResponse` envelope structure.
+*   **CRUD Operations:** Supports standard Create, Read (`Future<T>`), Update (`Future<T>`), and Delete (`Future<void>`) operations for a generic type `T`.
+*   **Querying:** Allows reading multiple items based on a query map, returning a `Future<PaginatedResponse<T>>` which includes the items list and pagination details (`cursor`, `hasMore`).
 *   **Error Propagation:** Catches and re-throws exceptions (like `HtHttpException` subtypes or `FormatException`) from the data client layer, allowing higher layers to handle them appropriately.
 *   **Dependency Injection:** Designed to receive an `HtDataClient<T>` instance via its constructor.
 
@@ -78,13 +78,18 @@ Future<void> exampleUsage() async {
     print('Read: ${readItem.id}, ${readItem.name}');
 
     // Read all items (example with pagination)
-    final allItems = await myDataRepository.readAll(limit: 10);
-    print('Read ${allItems.length} items');
+    final PaginatedResponse<MyData> allItemsResponse =
+        await myDataRepository.readAll(limit: 10);
+    print('Read ${allItemsResponse.items.length} items.');
+    if (allItemsResponse.hasMore) {
+      print('More items available (cursor: ${allItemsResponse.cursor})');
+    }
 
     // Query items
     final query = {'name': 'Specific Item'};
-    final queriedItems = await myDataRepository.readAllByQuery(query);
-    print('Found ${queriedItems.length} items matching query');
+    final PaginatedResponse<MyData> queriedItemsResponse =
+        await myDataRepository.readAllByQuery(query);
+    print('Found ${queriedItemsResponse.items.length} items matching query.');
 
     // Update an item
     final updatedItemData = MyData(id: createdItem.id, name: 'Updated Name');
