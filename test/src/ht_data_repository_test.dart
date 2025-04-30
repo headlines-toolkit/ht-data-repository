@@ -3,9 +3,7 @@
 
 import 'package:ht_data_client/ht_data_client.dart';
 import 'package:ht_data_repository/ht_data_repository.dart';
-import 'package:ht_http_client/ht_http_client.dart'
-    show BadRequestException, HtHttpException, NotFoundException;
-import 'package:ht_shared/ht_shared.dart'; // Import shared models
+import 'package:ht_shared/ht_shared.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
