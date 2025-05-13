@@ -34,8 +34,9 @@ dependencies:
 ## Features
 
 *   **Abstraction:** Provides a clean interface for data operations, hiding the underlying `HtDataClient` implementation details and the `SuccessApiResponse` envelope structure.
-*   **CRUD Operations:** Supports standard Create, Read (`Future<T>`), Update (`Future<T>`), and Delete (`Future<void>`) operations for a generic type `T`.
-*   **Querying:** Allows reading multiple items based on a query map, returning a `Future<PaginatedResponse<T>>` which includes the items list and pagination details (`cursor`, `hasMore`).
+*   **User Scoping:** Supports optional user-scoped data operations via a `userId` parameter in all data access methods, allowing for both user-specific and global resource management.
+*   **CRUD Operations:** Supports standard Create, Read (`Future<T>`), Update (`Future<T>`), and Delete (`Future<void>`) operations for a generic type `T`. These methods now accept an optional `String? userId`.
+*   **Querying:** Allows reading multiple items based on a query map, returning a `Future<PaginatedResponse<T>>` which includes the items list and pagination details (`cursor`, `hasMore`). This method also accepts an optional `String? userId`.
 *   **Error Propagation:** Catches and re-throws exceptions (like `HtHttpException` subtypes or `FormatException`) from the data client layer, allowing higher layers to handle them appropriately.
 *   **Dependency Injection:** Designed to receive an `HtDataClient<T>` instance via its constructor.
 
@@ -46,7 +47,7 @@ Instantiate the repository by providing an implementation of `HtDataClient<T>`.
 ```dart
 import 'package:ht_data_client/ht_data_client.dart';
 import 'package:ht_data_repository/ht_data_repository.dart';
-import 'package:ht_http_client/ht_http_client.dart'; // For exception handling
+import 'package:ht_shared/ht_shared.dart'; // For exception handling
 
 // Define your data model
 class MyData {
@@ -67,44 +68,55 @@ final myDataRepository = HtDataRepository<MyData>(dataClient: myDataClient);
 
 // Use the repository methods
 Future<void> exampleUsage() async {
+  const userId = 'example-user-id'; // Example user ID
+
   try {
-    // Create an item
+    // Create an item for a specific user
     final newItem = MyData(id: 'temp', name: 'New Item');
-    final createdItem = await myDataRepository.create(newItem);
-    print('Created: ${createdItem.id}, ${createdItem.name}');
+    final createdItem = await myDataRepository.create(item: newItem, userId: userId);
+    print('Created: ${createdItem.id}, ${createdItem.name} for user $userId');
 
-    // Read an item
-    final readItem = await myDataRepository.read(createdItem.id);
-    print('Read: ${readItem.id}, ${readItem.name}');
+    // Read an item for a specific user
+    final readItem = await myDataRepository.read(id: createdItem.id, userId: userId);
+    print('Read: ${readItem.id}, ${readItem.name} for user $userId');
 
-    // Read all items (example with pagination)
+    // Read all items for a specific user (example with pagination)
     final PaginatedResponse<MyData> allItemsResponse =
-        await myDataRepository.readAll(limit: 10);
-    print('Read ${allItemsResponse.items.length} items.');
+        await myDataRepository.readAll(limit: 10, userId: userId);
+    print('Read ${allItemsResponse.items.length} items for user $userId.');
     if (allItemsResponse.hasMore) {
       print('More items available (cursor: ${allItemsResponse.cursor})');
     }
 
-    // Query items
+    // Query items for a specific user
     final query = {'name': 'Specific Item'};
     final PaginatedResponse<MyData> queriedItemsResponse =
-        await myDataRepository.readAllByQuery(query);
-    print('Found ${queriedItemsResponse.items.length} items matching query.');
+        await myDataRepository.readAllByQuery(query, userId: userId);
+    print('Found ${queriedItemsResponse.items.length} items matching query for user $userId.');
 
-    // Update an item
+    // Update an item for a specific user
     final updatedItemData = MyData(id: createdItem.id, name: 'Updated Name');
-    final updatedItem = await myDataRepository.update(createdItem.id, updatedItemData);
-    print('Updated: ${updatedItem.id}, ${updatedItem.name}');
+    final updatedItem = await myDataRepository.update(id: createdItem.id, item: updatedItemData, userId: userId);
+    print('Updated: ${updatedItem.id}, ${updatedItem.name} for user $userId');
 
-    // Delete an item
-    await myDataRepository.delete(createdItem.id);
-    print('Deleted item ${createdItem.id}');
+    // Delete an item for a specific user
+    await myDataRepository.delete(id: createdItem.id, userId: userId);
+    print('Deleted item ${createdItem.id} for user $userId');
+
+    // Example of a global read (without userId)
+     final PaginatedResponse<MyData> globalItemsResponse =
+        await myDataRepository.readAll(limit: 5);
+    print('Read ${globalItemsResponse.items.length} global items.');
+
 
   } on HtHttpException catch (e) {
     // Handle specific HTTP errors from the client
-    print('HTTP Error: ${e.statusCode} - ${e.message}');
+    // Note: HtHttpException subtypes from ht_shared do not have statusCode
+    print('HTTP Error: ${e.message}');
     if (e is NotFoundException) {
       print('Item not found.');
+    } else if (e is ForbiddenException) {
+      print('Permission denied for this operation.');
     }
   } on FormatException catch (e) {
     // Handle data format errors during deserialization
