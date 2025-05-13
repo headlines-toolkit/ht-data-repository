@@ -79,42 +79,59 @@ void main() {
           'should call client.create and return the SuccessApiResponse '
           'containing the created item', () async {
         // Arrange
-        when(() => mockDataClient.create(any()))
-            .thenAnswer((_) async => mockSuccessResponseItem);
+        when(
+          () => mockDataClient.create(
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => mockSuccessResponseItem);
 
         // Act
-        final result = await repository.create(mockItem);
+        final result = await repository.create(item: mockItem);
 
         // Assert
         // Repository now returns the unwrapped item
         expect(result, equals(mockItem));
-        verify(() => mockDataClient.create(mockItem)).called(1);
+        verify(() => mockDataClient.create(item: mockItem, userId: null))
+            .called(1);
       });
 
       test('should rethrow HtHttpException when client.create throws',
           () async {
         // Arrange
-        when(() => mockDataClient.create(any())).thenThrow(mockHttpException);
+        when(
+          () => mockDataClient.create(
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockHttpException);
 
         // Act & Assert
         expect(
-          () => repository.create(mockItem),
+          () => repository.create(item: mockItem),
           throwsA(isA<HtHttpException>()),
         );
-        verify(() => mockDataClient.create(mockItem)).called(1);
+        verify(() => mockDataClient.create(item: mockItem, userId: null))
+            .called(1);
       });
 
       test('should rethrow FormatException when client.create throws',
           () async {
         // Arrange
-        when(() => mockDataClient.create(any())).thenThrow(mockFormatException);
+        when(
+          () => mockDataClient.create(
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockFormatException);
 
         // Act & Assert
         expect(
-          () => repository.create(mockItem),
+          () => repository.create(item: mockItem),
           throwsA(isA<FormatException>()),
         );
-        verify(() => mockDataClient.create(mockItem)).called(1);
+        verify(() => mockDataClient.create(item: mockItem, userId: null))
+            .called(1);
       });
     });
 
@@ -123,40 +140,54 @@ void main() {
           'should call client.read and return the SuccessApiResponse '
           'containing the item', () async {
         // Arrange
-        when(() => mockDataClient.read(any()))
-            .thenAnswer((_) async => mockSuccessResponseItem);
+        when(
+          () => mockDataClient.read(
+            id: any(named: 'id'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => mockSuccessResponseItem);
 
         // Act
-        final result = await repository.read(mockId);
+        final result = await repository.read(id: mockId);
 
         // Assert
         // Repository now returns the unwrapped item
         expect(result, equals(mockItem));
-        verify(() => mockDataClient.read(mockId)).called(1);
+        verify(() => mockDataClient.read(id: mockId, userId: null)).called(1);
       });
 
       test('should rethrow HtHttpException when client.read throws', () async {
         // Arrange
-        when(() => mockDataClient.read(any())).thenThrow(mockHttpException);
+        when(
+          () => mockDataClient.read(
+            id: any(named: 'id'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockHttpException);
 
         // Act & Assert
         expect(
-          () => repository.read(mockId),
+          () => repository.read(id: mockId),
           throwsA(isA<HtHttpException>()),
         );
-        verify(() => mockDataClient.read(mockId)).called(1);
+        verify(() => mockDataClient.read(id: mockId, userId: null)).called(1);
       });
 
       test('should rethrow FormatException when client.read throws', () async {
         // Arrange
-        when(() => mockDataClient.read(any())).thenThrow(mockFormatException);
+        when(
+          () => mockDataClient.read(
+            id: any(named: 'id'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockFormatException);
 
         // Act & Assert
         expect(
-          () => repository.read(mockId),
+          () => repository.read(id: mockId),
           throwsA(isA<FormatException>()),
         );
-        verify(() => mockDataClient.read(mockId)).called(1);
+        verify(() => mockDataClient.read(id: mockId, userId: null)).called(1);
       });
     });
 
@@ -167,6 +198,7 @@ void main() {
         // Arrange
         when(
           () => mockDataClient.readAll(
+            userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
@@ -180,14 +212,20 @@ void main() {
         // Repository now returns the unwrapped PaginatedResponse
         expect(result, equals(mockPaginatedResponse));
         expect(result.items, equals(mockItemsList)); // Check items within
-        verify(() => mockDataClient.readAll(startAfterId: 'lastId', limit: 10))
-            .called(1);
+        verify(
+          () => mockDataClient.readAll(
+            userId: null,
+            startAfterId: 'lastId',
+            limit: 10,
+          ),
+        ).called(1);
       });
 
       test('should call client.readAll without pagination args', () async {
         // Arrange
         when(
           () => mockDataClient.readAll(
+            userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
@@ -200,8 +238,13 @@ void main() {
         // Repository now returns the unwrapped PaginatedResponse
         expect(result, equals(mockPaginatedResponse));
         expect(result.items, equals(mockItemsList)); // Check items within
-        verify(() => mockDataClient.readAll(startAfterId: null, limit: null))
-            .called(1);
+        verify(
+          () => mockDataClient.readAll(
+            userId: null,
+            startAfterId: null,
+            limit: null,
+          ),
+        ).called(1);
       });
 
       test('should rethrow HtHttpException when client.readAll throws',
@@ -209,6 +252,7 @@ void main() {
         // Arrange
         when(
           () => mockDataClient.readAll(
+            userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
@@ -219,8 +263,13 @@ void main() {
           () => repository.readAll(),
           throwsA(isA<HtHttpException>()),
         );
-        verify(() => mockDataClient.readAll(startAfterId: null, limit: null))
-            .called(1);
+        verify(
+          () => mockDataClient.readAll(
+            userId: null,
+            startAfterId: null,
+            limit: null,
+          ),
+        ).called(1);
       });
 
       test('should rethrow FormatException when client.readAll throws',
@@ -228,6 +277,7 @@ void main() {
         // Arrange
         when(
           () => mockDataClient.readAll(
+            userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
@@ -238,8 +288,13 @@ void main() {
           () => repository.readAll(),
           throwsA(isA<FormatException>()),
         );
-        verify(() => mockDataClient.readAll(startAfterId: null, limit: null))
-            .called(1);
+        verify(
+          () => mockDataClient.readAll(
+            userId: null,
+            startAfterId: null,
+            limit: null,
+          ),
+        ).called(1);
       });
     });
 
@@ -251,6 +306,7 @@ void main() {
         when(
           () => mockDataClient.readAllByQuery(
             any(),
+            userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
@@ -270,6 +326,7 @@ void main() {
         verify(
           () => mockDataClient.readAllByQuery(
             mockQuery,
+            userId: null,
             startAfterId: 'lastId',
             limit: 10,
           ),
@@ -282,6 +339,7 @@ void main() {
         when(
           () => mockDataClient.readAllByQuery(
             any(),
+            userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
@@ -297,6 +355,7 @@ void main() {
         verify(
           () => mockDataClient.readAllByQuery(
             mockQuery,
+            userId: null,
             startAfterId: null,
             limit: null,
           ),
@@ -310,6 +369,7 @@ void main() {
         when(
           () => mockDataClient.readAllByQuery(
             any(),
+            userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
@@ -323,6 +383,7 @@ void main() {
         verify(
           () => mockDataClient.readAllByQuery(
             mockQuery,
+            userId: null,
             startAfterId: null,
             limit: null,
           ),
@@ -335,6 +396,7 @@ void main() {
         when(
           () => mockDataClient.readAllByQuery(
             any(),
+            userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
           ),
@@ -348,6 +410,7 @@ void main() {
         verify(
           () => mockDataClient.readAllByQuery(
             mockQuery,
+            userId: null,
             startAfterId: null,
             limit: null,
           ),
@@ -360,71 +423,101 @@ void main() {
           'should call client.update and return the SuccessApiResponse '
           'containing the updated item', () async {
         // Arrange
-        when(() => mockDataClient.update(any(), any()))
-            .thenAnswer((_) async => mockSuccessResponseUpdatedItem);
+        when(
+          () => mockDataClient.update(
+            id: any(named: 'id'),
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => mockSuccessResponseUpdatedItem);
 
         // Act
-        final result = await repository.update(mockId, mockItem);
+        final result = await repository.update(id: mockId, item: mockItem);
 
         // Assert
         // Repository now returns the unwrapped item
         expect(result, equals(updatedMockItem));
-        verify(() => mockDataClient.update(mockId, mockItem)).called(1);
+        verify(
+          () => mockDataClient.update(id: mockId, item: mockItem, userId: null),
+        ).called(1);
       });
 
       test('should rethrow HtHttpException when client.update throws',
           () async {
         // Arrange
-        when(() => mockDataClient.update(any(), any()))
-            .thenThrow(mockHttpException);
+        when(
+          () => mockDataClient.update(
+            id: any(named: 'id'),
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockHttpException);
 
         // Act & Assert
         expect(
-          () => repository.update(mockId, mockItem),
+          () => repository.update(id: mockId, item: mockItem),
           throwsA(isA<HtHttpException>()),
         );
-        verify(() => mockDataClient.update(mockId, mockItem)).called(1);
+        verify(
+          () => mockDataClient.update(id: mockId, item: mockItem, userId: null),
+        ).called(1);
       });
 
       test('should rethrow FormatException when client.update throws',
           () async {
         // Arrange
-        when(() => mockDataClient.update(any(), any()))
-            .thenThrow(mockFormatException);
+        when(
+          () => mockDataClient.update(
+            id: any(named: 'id'),
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockFormatException);
 
         // Act & Assert
         expect(
-          () => repository.update(mockId, mockItem),
+          () => repository.update(id: mockId, item: mockItem),
           throwsA(isA<FormatException>()),
         );
-        verify(() => mockDataClient.update(mockId, mockItem)).called(1);
+        verify(
+          () => mockDataClient.update(id: mockId, item: mockItem, userId: null),
+        ).called(1);
       });
     });
 
     group('delete', () {
       test('should call client.delete', () async {
         // Arrange
-        when(() => mockDataClient.delete(any()))
-            .thenAnswer((_) async {}); // Completes normally
+        when(
+          () => mockDataClient.delete(
+            id: any(named: 'id'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async {}); // Completes normally
 
         // Act
-        await repository.delete(mockId);
+        await repository.delete(id: mockId);
 
         // Assert
-        verify(() => mockDataClient.delete(mockId)).called(1);
+        verify(() => mockDataClient.delete(id: mockId)).called(1);
       });
 
       test('should rethrow HtHttpException when client.delete throws',
           () async {
         // Arrange
-        when(() => mockDataClient.delete(any())).thenThrow(mockHttpException);
+        when(
+          () => mockDataClient.delete(
+            id: any(named: 'id'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockHttpException);
 
         // Act & Assert
         expect(
-          () => repository.delete(mockId),
+          () => repository.delete(id: mockId),
           throwsA(isA<HtHttpException>()),
         );
-        verify(() => mockDataClient.delete(mockId)).called(1);
+        verify(() => mockDataClient.delete(id: mockId)).called(1);
       });
 
       // Note: delete typically doesn't involve FormatException unless the client
