@@ -33,9 +33,9 @@ class HtDataRepository<T> {
   /// created item of type [T].
   ///
   /// Re-throws any [HtHttpException] or [FormatException] from the client.
-  Future<T> create(T item) async {
+  Future<T> create({required T item, String? userId}) async {
     try {
-      final response = await _dataClient.create(item);
+      final response = await _dataClient.create(item: item, userId: userId);
       return response.data;
     } on HtHttpException {
       rethrow; // Propagate client-level HTTP exceptions
@@ -53,9 +53,9 @@ class HtDataRepository<T> {
   ///
   /// Re-throws any [HtHttpException] (like [NotFoundException]) or
   /// [FormatException] from the client.
-  Future<T> read(String id) async {
+  Future<T> read({required String id, String? userId}) async {
     try {
-      final response = await _dataClient.read(id);
+      final response = await _dataClient.read(id: id, userId: userId);
       return response.data;
     } on HtHttpException {
       rethrow;
@@ -73,11 +73,13 @@ class HtDataRepository<T> {
   ///
   /// Re-throws any [HtHttpException] or [FormatException] from the client.
   Future<PaginatedResponse<T>> readAll({
+    String? userId,
     String? startAfterId,
     int? limit,
   }) async {
     try {
       final response = await _dataClient.readAll(
+        userId: userId,
         startAfterId: startAfterId,
         limit: limit,
       );
@@ -100,12 +102,14 @@ class HtDataRepository<T> {
   /// [FormatException] from the client.
   Future<PaginatedResponse<T>> readAllByQuery(
     Map<String, dynamic> query, {
+    String? userId,
     String? startAfterId,
     int? limit,
   }) async {
     try {
       final response = await _dataClient.readAllByQuery(
         query,
+        userId: userId,
         startAfterId: startAfterId,
         limit: limit,
       );
@@ -124,9 +128,14 @@ class HtDataRepository<T> {
   ///
   /// Re-throws any [HtHttpException] (like [NotFoundException]) or
   /// [FormatException] from the client.
-  Future<T> update(String id, T item) async {
+  Future<T> update({
+    required String id,
+    required T item,
+    String? userId,
+  }) async {
     try {
-      final response = await _dataClient.update(id, item);
+      final response =
+          await _dataClient.update(id: id, item: item, userId: userId);
       return response.data;
     } on HtHttpException {
       rethrow;
@@ -140,9 +149,9 @@ class HtDataRepository<T> {
   /// Returns `void` upon successful deletion.
   ///
   /// Re-throws any [HtHttpException] (like [NotFoundException]) from the client.
-  Future<void> delete(String id) async {
+  Future<void> delete({required String id, String? userId}) async {
     try {
-      await _dataClient.delete(id);
+      await _dataClient.delete(id: id, userId: userId);
     } on HtHttpException {
       rethrow;
     }
