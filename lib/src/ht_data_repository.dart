@@ -23,7 +23,7 @@ import 'package:ht_shared/ht_shared.dart';
 class HtDataRepository<T> {
   /// {@macro ht_data_repository}
   const HtDataRepository({required HtDataClient<T> dataClient})
-      : _dataClient = dataClient;
+    : _dataClient = dataClient;
 
   final HtDataClient<T> _dataClient;
 
@@ -134,8 +134,11 @@ class HtDataRepository<T> {
     String? userId,
   }) async {
     try {
-      final response =
-          await _dataClient.update(id: id, item: item, userId: userId);
+      final response = await _dataClient.update(
+        id: id,
+        item: item,
+        userId: userId,
+      );
       return response.data;
     } on HtHttpException {
       rethrow;
