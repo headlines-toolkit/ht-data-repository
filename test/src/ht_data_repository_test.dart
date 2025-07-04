@@ -202,41 +202,42 @@ void main() {
 
     group('readAll', () {
       test(
-          'should call client.readAll with all args and return PaginatedResponse',
-          () async {
-        // Arrange
-        when(
-          () => mockDataClient.readAll(
-            userId: any(named: 'userId'),
-            startAfterId: any(named: 'startAfterId'),
-            limit: any(named: 'limit'),
-            sortBy: any(named: 'sortBy'),
-            sortOrder: any(named: 'sortOrder'),
-          ),
-        ).thenAnswer((_) async => mockSuccessResponseList);
+        'should call client.readAll with all args and return PaginatedResponse',
+        () async {
+          // Arrange
+          when(
+            () => mockDataClient.readAll(
+              userId: any(named: 'userId'),
+              startAfterId: any(named: 'startAfterId'),
+              limit: any(named: 'limit'),
+              sortBy: any(named: 'sortBy'),
+              sortOrder: any(named: 'sortOrder'),
+            ),
+          ).thenAnswer((_) async => mockSuccessResponseList);
 
-        // Act
-        final result = await repository.readAll(
-          startAfterId: 'lastId',
-          limit: 10,
-          sortBy: mockSortBy,
-          sortOrder: mockSortOrder,
-        );
-
-        // Assert
-        // Repository now returns the unwrapped PaginatedResponse
-        expect(result, equals(mockPaginatedResponse));
-        expect(result.items, equals(mockItemsList)); // Check items within
-        verify(
-          () => mockDataClient.readAll(
-            userId: null,
+          // Act
+          final result = await repository.readAll(
             startAfterId: 'lastId',
             limit: 10,
             sortBy: mockSortBy,
             sortOrder: mockSortOrder,
-          ),
-        ).called(1);
-      });
+          );
+
+          // Assert
+          // Repository now returns the unwrapped PaginatedResponse
+          expect(result, equals(mockPaginatedResponse));
+          expect(result.items, equals(mockItemsList)); // Check items within
+          verify(
+            () => mockDataClient.readAll(
+              userId: null,
+              startAfterId: 'lastId',
+              limit: 10,
+              sortBy: mockSortBy,
+              sortOrder: mockSortOrder,
+            ),
+          ).called(1);
+        },
+      );
 
       test('should call client.readAll without pagination args', () async {
         // Arrange
@@ -327,44 +328,45 @@ void main() {
 
     group('readAllByQuery', () {
       test(
-          'should call client.readAllByQuery with all args and return PaginatedResponse',
-          () async {
-        // Arrange
-        when(
-          () => mockDataClient.readAllByQuery(
-            any(),
-            userId: any(named: 'userId'),
-            startAfterId: any(named: 'startAfterId'),
-            limit: any(named: 'limit'),
-            sortBy: any(named: 'sortBy'),
-            sortOrder: any(named: 'sortOrder'),
-          ),
-        ).thenAnswer((_) async => mockSuccessResponseList);
+        'should call client.readAllByQuery with all args and return PaginatedResponse',
+        () async {
+          // Arrange
+          when(
+            () => mockDataClient.readAllByQuery(
+              any(),
+              userId: any(named: 'userId'),
+              startAfterId: any(named: 'startAfterId'),
+              limit: any(named: 'limit'),
+              sortBy: any(named: 'sortBy'),
+              sortOrder: any(named: 'sortOrder'),
+            ),
+          ).thenAnswer((_) async => mockSuccessResponseList);
 
-        // Act
-        final result = await repository.readAllByQuery(
-          mockQuery,
-          startAfterId: 'lastId',
-          limit: 10,
-          sortBy: mockSortBy,
-          sortOrder: mockSortOrder,
-        );
-
-        // Assert
-        // Repository now returns the unwrapped PaginatedResponse
-        expect(result, equals(mockPaginatedResponse));
-        expect(result.items, equals(mockItemsList)); // Check items within
-        verify(
-          () => mockDataClient.readAllByQuery(
+          // Act
+          final result = await repository.readAllByQuery(
             mockQuery,
-            userId: null,
             startAfterId: 'lastId',
             limit: 10,
             sortBy: mockSortBy,
             sortOrder: mockSortOrder,
-          ),
-        ).called(1);
-      });
+          );
+
+          // Assert
+          // Repository now returns the unwrapped PaginatedResponse
+          expect(result, equals(mockPaginatedResponse));
+          expect(result.items, equals(mockItemsList)); // Check items within
+          verify(
+            () => mockDataClient.readAllByQuery(
+              mockQuery,
+              userId: null,
+              startAfterId: 'lastId',
+              limit: 10,
+              sortBy: mockSortBy,
+              sortOrder: mockSortOrder,
+            ),
+          ).called(1);
+        },
+      );
 
       test(
         'should call client.readAllByQuery without pagination args',
