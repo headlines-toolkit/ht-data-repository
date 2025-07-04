@@ -62,12 +62,15 @@ void main() {
     final mockQuery = {'category': 'test'};
     const mockHttpException = NotFoundException('Item not found');
     const mockFormatException = FormatException('Invalid data format');
+    const mockSortBy = 'name';
+    const mockSortOrder = SortOrder.asc;
 
     setUp(() {
       // Register fallback values for any() matchers if needed
       registerFallbackValue(const _MockData(id: 'fallback'));
       // Rely on type inference for the map fallback value
       registerFallbackValue(<String, dynamic>{});
+      registerFallbackValue(SortOrder.asc);
 
       mockDataClient = MockHtDataClient();
       repository = HtDataRepository<_MockData>(dataClient: mockDataClient);
@@ -198,14 +201,17 @@ void main() {
     });
 
     group('readAll', () {
-      test('should call client.readAll and return SuccessApiResponse '
-          'containing PaginatedResponse', () async {
+      test(
+          'should call client.readAll with all args and return PaginatedResponse',
+          () async {
         // Arrange
         when(
           () => mockDataClient.readAll(
             userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
+            sortBy: any(named: 'sortBy'),
+            sortOrder: any(named: 'sortOrder'),
           ),
         ).thenAnswer((_) async => mockSuccessResponseList);
 
@@ -213,6 +219,8 @@ void main() {
         final result = await repository.readAll(
           startAfterId: 'lastId',
           limit: 10,
+          sortBy: mockSortBy,
+          sortOrder: mockSortOrder,
         );
 
         // Assert
@@ -224,6 +232,8 @@ void main() {
             userId: null,
             startAfterId: 'lastId',
             limit: 10,
+            sortBy: mockSortBy,
+            sortOrder: mockSortOrder,
           ),
         ).called(1);
       });
@@ -235,6 +245,8 @@ void main() {
             userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
+            sortBy: any(named: 'sortBy'),
+            sortOrder: any(named: 'sortOrder'),
           ),
         ).thenAnswer((_) async => mockSuccessResponseList);
 
@@ -250,6 +262,8 @@ void main() {
             userId: null,
             startAfterId: null,
             limit: null,
+            sortBy: null,
+            sortOrder: null,
           ),
         ).called(1);
       });
@@ -263,6 +277,8 @@ void main() {
               userId: any(named: 'userId'),
               startAfterId: any(named: 'startAfterId'),
               limit: any(named: 'limit'),
+              sortBy: any(named: 'sortBy'),
+              sortOrder: any(named: 'sortOrder'),
             ),
           ).thenThrow(mockHttpException);
 
@@ -273,6 +289,8 @@ void main() {
               userId: null,
               startAfterId: null,
               limit: null,
+              sortBy: null,
+              sortOrder: null,
             ),
           ).called(1);
         },
@@ -287,6 +305,8 @@ void main() {
               userId: any(named: 'userId'),
               startAfterId: any(named: 'startAfterId'),
               limit: any(named: 'limit'),
+              sortBy: any(named: 'sortBy'),
+              sortOrder: any(named: 'sortOrder'),
             ),
           ).thenThrow(mockFormatException);
 
@@ -297,6 +317,8 @@ void main() {
               userId: null,
               startAfterId: null,
               limit: null,
+              sortBy: null,
+              sortOrder: null,
             ),
           ).called(1);
         },
@@ -304,8 +326,9 @@ void main() {
     });
 
     group('readAllByQuery', () {
-      test('should call client.readAllByQuery and return SuccessApiResponse '
-          'containing PaginatedResponse', () async {
+      test(
+          'should call client.readAllByQuery with all args and return PaginatedResponse',
+          () async {
         // Arrange
         when(
           () => mockDataClient.readAllByQuery(
@@ -313,6 +336,8 @@ void main() {
             userId: any(named: 'userId'),
             startAfterId: any(named: 'startAfterId'),
             limit: any(named: 'limit'),
+            sortBy: any(named: 'sortBy'),
+            sortOrder: any(named: 'sortOrder'),
           ),
         ).thenAnswer((_) async => mockSuccessResponseList);
 
@@ -321,6 +346,8 @@ void main() {
           mockQuery,
           startAfterId: 'lastId',
           limit: 10,
+          sortBy: mockSortBy,
+          sortOrder: mockSortOrder,
         );
 
         // Assert
@@ -333,6 +360,8 @@ void main() {
             userId: null,
             startAfterId: 'lastId',
             limit: 10,
+            sortBy: mockSortBy,
+            sortOrder: mockSortOrder,
           ),
         ).called(1);
       });
@@ -347,6 +376,8 @@ void main() {
               userId: any(named: 'userId'),
               startAfterId: any(named: 'startAfterId'),
               limit: any(named: 'limit'),
+              sortBy: any(named: 'sortBy'),
+              sortOrder: any(named: 'sortOrder'),
             ),
           ).thenAnswer((_) async => mockSuccessResponseList);
 
@@ -363,6 +394,8 @@ void main() {
               userId: null,
               startAfterId: null,
               limit: null,
+              sortBy: null,
+              sortOrder: null,
             ),
           ).called(1);
         },
@@ -379,6 +412,8 @@ void main() {
               userId: any(named: 'userId'),
               startAfterId: any(named: 'startAfterId'),
               limit: any(named: 'limit'),
+              sortBy: any(named: 'sortBy'),
+              sortOrder: any(named: 'sortOrder'),
             ),
           ).thenThrow(badRequestException);
 
@@ -393,6 +428,8 @@ void main() {
               userId: null,
               startAfterId: null,
               limit: null,
+              sortBy: null,
+              sortOrder: null,
             ),
           ).called(1);
         },
@@ -408,6 +445,8 @@ void main() {
               userId: any(named: 'userId'),
               startAfterId: any(named: 'startAfterId'),
               limit: any(named: 'limit'),
+              sortBy: any(named: 'sortBy'),
+              sortOrder: any(named: 'sortOrder'),
             ),
           ).thenThrow(mockFormatException);
 
@@ -422,6 +461,8 @@ void main() {
               userId: null,
               startAfterId: null,
               limit: null,
+              sortBy: null,
+              sortOrder: null,
             ),
           ).called(1);
         },

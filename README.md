@@ -38,6 +38,7 @@ dependencies:
 *   **CRUD Operations:** Supports standard Create, Read (`Future<T>`), Update (`Future<T>`), and Delete (`Future<void>`) operations for a generic type `T`. These methods now accept an optional `String? userId`.
 *   **Querying:** Allows reading multiple items based on a query map, returning a `Future<PaginatedResponse<T>>` which includes the items list and pagination details (`cursor`, `hasMore`). This method also accepts an optional `String? userId`.
 *   **Error Propagation:** Catches and re-throws exceptions (like `HtHttpException` subtypes or `FormatException`) from the data client layer, allowing higher layers to handle them appropriately.
+*   **Pagination and Sorting:** Supports pagination (`startAfterId`, `limit`) and sorting (`sortBy`, `sortOrder`) in methods that return multiple items.
 *   **Dependency Injection:** Designed to receive an `HtDataClient<T>` instance via its constructor.
 
 ## Usage
@@ -87,6 +88,12 @@ Future<void> exampleUsage() async {
     if (allItemsResponse.hasMore) {
       print('More items available (cursor: ${allItemsResponse.cursor})');
     }
+
+    // Read all items sorted by name
+    final PaginatedResponse<MyData> sortedItemsResponse =
+        await myDataRepository.readAll(sortBy: 'name', sortOrder: SortOrder.asc);
+    print('Read ${sortedItemsResponse.items.length} items, sorted by name.');
+
 
     // Query items for a specific user
     final query = {'name': 'Specific Item'};

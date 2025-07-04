@@ -67,6 +67,7 @@ class HtDataRepository<T> {
   /// Reads all resource items of type [T] via the client.
   ///
   /// Supports pagination using [startAfterId] and [limit].
+  /// Supports sorting using [sortBy] and [sortOrder].
   /// Unwraps the [SuccessApiResponse] from the client and returns the
   /// [PaginatedResponse] containing the list of deserialized items and
   /// pagination details.
@@ -76,12 +77,16 @@ class HtDataRepository<T> {
     String? userId,
     String? startAfterId,
     int? limit,
+    String? sortBy,
+    SortOrder? sortOrder,
   }) async {
     try {
       final response = await _dataClient.readAll(
         userId: userId,
         startAfterId: startAfterId,
         limit: limit,
+        sortBy: sortBy,
+        sortOrder: sortOrder,
       );
       return response.data;
     } on HtHttpException {
@@ -94,6 +99,7 @@ class HtDataRepository<T> {
   /// Reads multiple resource items of type [T] based on a [query] via the client.
   ///
   /// Supports pagination using [startAfterId] and [limit].
+  /// Supports sorting using [sortBy] and [sortOrder].
   /// Unwraps the [SuccessApiResponse] from the client and returns the
   /// [PaginatedResponse] containing the list of deserialized items matching
   /// the query and pagination details.
@@ -105,6 +111,8 @@ class HtDataRepository<T> {
     String? userId,
     String? startAfterId,
     int? limit,
+    String? sortBy,
+    SortOrder? sortOrder,
   }) async {
     try {
       final response = await _dataClient.readAllByQuery(
@@ -112,6 +120,8 @@ class HtDataRepository<T> {
         userId: userId,
         startAfterId: startAfterId,
         limit: limit,
+        sortBy: sortBy,
+        sortOrder: sortOrder,
       );
       return response.data;
     } on HtHttpException {
