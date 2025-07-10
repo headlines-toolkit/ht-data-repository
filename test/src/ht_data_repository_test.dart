@@ -40,10 +40,18 @@ void main() {
     // Dummy data instances for testing
     const mockId = 'test-id-123';
     const mockItem = _MockData(id: mockId, value: 'Test Item');
-    const mockSuccessResponseItem = SuccessApiResponse(data: mockItem);
+    final mockMetadata = ResponseMetadata(
+      requestId: 'test-req-id',
+      timestamp: DateTime.now(),
+    );
+    final mockSuccessResponseItem = SuccessApiResponse(
+      data: mockItem,
+      metadata: mockMetadata,
+    );
     const updatedMockItem = _MockData(id: mockId, value: 'Updated Item');
-    const mockSuccessResponseUpdatedItem = SuccessApiResponse(
+    final mockSuccessResponseUpdatedItem = SuccessApiResponse(
       data: updatedMockItem,
+      metadata: mockMetadata,
     );
     final mockItemsList = [
       const _MockData(id: 'id1', value: 'Item 1'),
@@ -57,6 +65,7 @@ void main() {
     );
     final mockSuccessResponseList = SuccessApiResponse(
       data: mockPaginatedResponse,
+      metadata: mockMetadata,
     );
 
     final mockQuery = {'category': 'test'};
