@@ -64,10 +64,9 @@ class HtDataRepository<T> {
     }
   }
 
-  /// Reads all resource items of type [T] via the client.
+  /// Reads multiple resource items of type [T] via the client, with support
+  /// for rich filtering, sorting, and pagination.
   ///
-  /// Supports pagination using [startAfterId] and [limit].
-  /// Supports sorting using [sortBy] and [sortOrder].
   /// Unwraps the [SuccessApiResponse] from the client and returns the
   /// [PaginatedResponse] containing the list of deserialized items and
   /// pagination details.
@@ -75,53 +74,16 @@ class HtDataRepository<T> {
   /// Re-throws any [HtHttpException] or [FormatException] from the client.
   Future<PaginatedResponse<T>> readAll({
     String? userId,
-    String? startAfterId,
-    int? limit,
-    String? sortBy,
-    SortOrder? sortOrder,
+    Map<String, dynamic>? filter,
+    PaginationOptions? pagination,
+    List<SortOption>? sort,
   }) async {
     try {
       final response = await _dataClient.readAll(
         userId: userId,
-        startAfterId: startAfterId,
-        limit: limit,
-        sortBy: sortBy,
-        sortOrder: sortOrder,
-      );
-      return response.data;
-    } on HtHttpException {
-      rethrow;
-    } on FormatException {
-      rethrow;
-    }
-  }
-
-  /// Reads multiple resource items of type [T] based on a [query] via the client.
-  ///
-  /// Supports pagination using [startAfterId] and [limit].
-  /// Supports sorting using [sortBy] and [sortOrder].
-  /// Unwraps the [SuccessApiResponse] from the client and returns the
-  /// [PaginatedResponse] containing the list of deserialized items matching
-  /// the query and pagination details.
-  ///
-  /// Re-throws any [HtHttpException] (like [BadRequestException]) or
-  /// [FormatException] from the client.
-  Future<PaginatedResponse<T>> readAllByQuery(
-    Map<String, dynamic> query, {
-    String? userId,
-    String? startAfterId,
-    int? limit,
-    String? sortBy,
-    SortOrder? sortOrder,
-  }) async {
-    try {
-      final response = await _dataClient.readAllByQuery(
-        query,
-        userId: userId,
-        startAfterId: startAfterId,
-        limit: limit,
-        sortBy: sortBy,
-        sortOrder: sortOrder,
+        filter: filter,
+        pagination: pagination,
+        sort: sort,
       );
       return response.data;
     } on HtHttpException {
