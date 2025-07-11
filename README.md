@@ -36,9 +36,8 @@ dependencies:
 *   **Abstraction:** Provides a clean interface for data operations, hiding the underlying `HtDataClient` implementation details and the `SuccessApiResponse` envelope structure.
 *   **User Scoping:** Supports optional user-scoped data operations via a `userId` parameter in all data access methods, allowing for both user-specific and global resource management.
 *   **CRUD Operations:** Supports standard Create, Read (`Future<T>`), Update (`Future<T>`), and Delete (`Future<void>`) operations for a generic type `T`. These methods now accept an optional `String? userId`.
-*   **Querying:** Allows reading multiple items based on a query map, returning a `Future<PaginatedResponse<T>>` which includes the items list and pagination details (`cursor`, `hasMore`). This method also accepts an optional `String? userId`.
+*   **Advanced Querying:** A single `readAll` method returns a `Future<PaginatedResponse<T>>` and supports rich filtering, multi-field sorting, and cursor-based pagination, aligning with modern NoSQL database capabilities.
 *   **Error Propagation:** Catches and re-throws exceptions (like `HtHttpException` subtypes or `FormatException`) from the data client layer, allowing higher layers to handle them appropriately.
-*   **Pagination and Sorting:** Supports pagination (`startAfterId`, `limit`) and sorting (`sortBy`, `sortOrder`) in methods that return multiple items.
 *   **Dependency Injection:** Designed to receive an `HtDataClient<T>` instance via its constructor.
 
 ## Usage
@@ -81,38 +80,34 @@ Future<void> exampleUsage() async {
     final readItem = await myDataRepository.read(id: createdItem.id, userId: userId);
     print('Read: ${readItem.id}, ${readItem.name} for user $userId');
 
-    // Read all items for a specific user (example with pagination)
-    final PaginatedResponse<MyData> allItemsResponse =
-        await myDataRepository.readAll(limit: 10, userId: userId);
+    // Read all items for a user with pagination
+    final allItemsResponse = await myDataRepository.readAll(
+      userId: userId,
+      pagination: PaginationOptions(limit: 10),
+    );
     print('Read ${allItemsResponse.items.length} items for user $userId.');
-    if (allItemsResponse.hasMore) {
-      print('More items available (cursor: ${allItemsResponse.cursor})');
+    if (allItemsResponse.nextCursor != null) {
+      print('More items available (nextCursor: ${allItemsResponse.nextCursor})');
     }
 
-    // Read all items sorted by name
-    final PaginatedResponse<MyData> sortedItemsResponse =
-        await myDataRepository.readAll(sortBy: 'name', sortOrder: SortOrder.asc);
-    print('Read ${sortedItemsResponse.items.length} items, sorted by name.');
-
-
-    // Query items for a specific user
-    final query = {'name': 'Specific Item'};
-    final PaginatedResponse<MyData> queriedItemsResponse =
-        await myDataRepository.readAllByQuery(query, userId: userId);
-    print('Found ${queriedItemsResponse.items.length} items matching query for user $userId.');
+    // Query items for a user with filtering and sorting
+    final filter = {'status': 'published'};
+    final sort = [SortOption('publishDate', SortOrder.desc)];
+    final queriedItemsResponse = await myDataRepository.readAll(
+      userId: userId,
+      filter: filter,
+      sort: sort,
+    );
+    print('Found ${queriedItemsResponse.items.length} items matching filter for user $userId.');
 
     // Update an item for a specific user
     final updatedItemData = MyData(id: createdItem.id, name: 'Updated Name');
     final updatedItem = await myDataRepository.update(id: createdItem.id, item: updatedItemData, userId: userId);
     print('Updated: ${updatedItem.id}, ${updatedItem.name} for user $userId');
 
-    // Delete an item for a specific user
-    await myDataRepository.delete(id: createdItem.id, userId: userId);
-    print('Deleted item ${createdItem.id} for user $userId');
-
     // Example of a global read (without userId)
      final PaginatedResponse<MyData> globalItemsResponse =
-        await myDataRepository.readAll(limit: 5);
+        await myDataRepository.readAll(pagination: PaginationOptions(limit: 5));
     print('Read ${globalItemsResponse.items.length} global items.');
 
 
