@@ -80,6 +80,8 @@ void main() {
       // Rely on type inference for the map fallback value
       registerFallbackValue(<String, dynamic>{});
       registerFallbackValue(SortOrder.asc);
+      registerFallbackValue(const PaginationOptions());
+      registerFallbackValue(<SortOption>[]);
 
       mockDataClient = MockHtDataClient();
       repository = HtDataRepository<_MockData>(dataClient: mockDataClient);
@@ -217,46 +219,45 @@ void main() {
           when(
             () => mockDataClient.readAll(
               userId: any(named: 'userId'),
-              startAfterId: any(named: 'startAfterId'),
-              limit: any(named: 'limit'),
-              sortBy: any(named: 'sortBy'),
-              sortOrder: any(named: 'sortOrder'),
+              filter: any(named: 'filter'),
+              pagination: any(named: 'pagination'),
+              sort: any(named: 'sort'),
             ),
           ).thenAnswer((_) async => mockSuccessResponseList);
 
           // Act
-          final result = await repository.readAll(
-            startAfterId: 'lastId',
+          final paginationOptions = const PaginationOptions(
+            cursor: 'lastId',
             limit: 10,
-            sortBy: mockSortBy,
-            sortOrder: mockSortOrder,
+          );
+          final sortOptions = [const SortOption(mockSortBy, mockSortOrder)];
+          final result = await repository.readAll(
+            pagination: paginationOptions,
+            sort: sortOptions,
           );
 
           // Assert
-          // Repository now returns the unwrapped PaginatedResponse
           expect(result, equals(mockPaginatedResponse));
-          expect(result.items, equals(mockItemsList)); // Check items within
+          expect(result.items, equals(mockItemsList));
           verify(
             () => mockDataClient.readAll(
               userId: null,
-              startAfterId: 'lastId',
-              limit: 10,
-              sortBy: mockSortBy,
-              sortOrder: mockSortOrder,
+              filter: null,
+              pagination: paginationOptions,
+              sort: sortOptions,
             ),
           ).called(1);
         },
       );
 
-      test('should call client.readAll without pagination args', () async {
+      test('should call client.readAll without optional args', () async {
         // Arrange
         when(
           () => mockDataClient.readAll(
             userId: any(named: 'userId'),
-            startAfterId: any(named: 'startAfterId'),
-            limit: any(named: 'limit'),
-            sortBy: any(named: 'sortBy'),
-            sortOrder: any(named: 'sortOrder'),
+            filter: any(named: 'filter'),
+            pagination: any(named: 'pagination'),
+            sort: any(named: 'sort'),
           ),
         ).thenAnswer((_) async => mockSuccessResponseList);
 
@@ -264,16 +265,14 @@ void main() {
         final result = await repository.readAll();
 
         // Assert
-        // Repository now returns the unwrapped PaginatedResponse
         expect(result, equals(mockPaginatedResponse));
-        expect(result.items, equals(mockItemsList)); // Check items within
+        expect(result.items, equals(mockItemsList));
         verify(
           () => mockDataClient.readAll(
             userId: null,
-            startAfterId: null,
-            limit: null,
-            sortBy: null,
-            sortOrder: null,
+            filter: null,
+            pagination: null,
+            sort: null,
           ),
         ).called(1);
       });
@@ -285,10 +284,9 @@ void main() {
           when(
             () => mockDataClient.readAll(
               userId: any(named: 'userId'),
-              startAfterId: any(named: 'startAfterId'),
-              limit: any(named: 'limit'),
-              sortBy: any(named: 'sortBy'),
-              sortOrder: any(named: 'sortOrder'),
+              filter: any(named: 'filter'),
+              pagination: any(named: 'pagination'),
+              sort: any(named: 'sort'),
             ),
           ).thenThrow(mockHttpException);
 
@@ -297,10 +295,9 @@ void main() {
           verify(
             () => mockDataClient.readAll(
               userId: null,
-              startAfterId: null,
-              limit: null,
-              sortBy: null,
-              sortOrder: null,
+              filter: null,
+              pagination: null,
+              sort: null,
             ),
           ).called(1);
         },
@@ -313,10 +310,9 @@ void main() {
           when(
             () => mockDataClient.readAll(
               userId: any(named: 'userId'),
-              startAfterId: any(named: 'startAfterId'),
-              limit: any(named: 'limit'),
-              sortBy: any(named: 'sortBy'),
-              sortOrder: any(named: 'sortOrder'),
+              filter: any(named: 'filter'),
+              pagination: any(named: 'pagination'),
+              sort: any(named: 'sort'),
             ),
           ).thenThrow(mockFormatException);
 
@@ -325,155 +321,9 @@ void main() {
           verify(
             () => mockDataClient.readAll(
               userId: null,
-              startAfterId: null,
-              limit: null,
-              sortBy: null,
-              sortOrder: null,
-            ),
-          ).called(1);
-        },
-      );
-    });
-
-    group('readAllByQuery', () {
-      test(
-        'should call client.readAllByQuery with all args and return PaginatedResponse',
-        () async {
-          // Arrange
-          when(
-            () => mockDataClient.readAllByQuery(
-              any(),
-              userId: any(named: 'userId'),
-              startAfterId: any(named: 'startAfterId'),
-              limit: any(named: 'limit'),
-              sortBy: any(named: 'sortBy'),
-              sortOrder: any(named: 'sortOrder'),
-            ),
-          ).thenAnswer((_) async => mockSuccessResponseList);
-
-          // Act
-          final result = await repository.readAllByQuery(
-            mockQuery,
-            startAfterId: 'lastId',
-            limit: 10,
-            sortBy: mockSortBy,
-            sortOrder: mockSortOrder,
-          );
-
-          // Assert
-          // Repository now returns the unwrapped PaginatedResponse
-          expect(result, equals(mockPaginatedResponse));
-          expect(result.items, equals(mockItemsList)); // Check items within
-          verify(
-            () => mockDataClient.readAllByQuery(
-              mockQuery,
-              userId: null,
-              startAfterId: 'lastId',
-              limit: 10,
-              sortBy: mockSortBy,
-              sortOrder: mockSortOrder,
-            ),
-          ).called(1);
-        },
-      );
-
-      test(
-        'should call client.readAllByQuery without pagination args',
-        () async {
-          // Arrange
-          when(
-            () => mockDataClient.readAllByQuery(
-              any(),
-              userId: any(named: 'userId'),
-              startAfterId: any(named: 'startAfterId'),
-              limit: any(named: 'limit'),
-              sortBy: any(named: 'sortBy'),
-              sortOrder: any(named: 'sortOrder'),
-            ),
-          ).thenAnswer((_) async => mockSuccessResponseList);
-
-          // Act
-          final result = await repository.readAllByQuery(mockQuery);
-
-          // Assert
-          // Repository now returns the unwrapped PaginatedResponse
-          expect(result, equals(mockPaginatedResponse));
-          expect(result.items, equals(mockItemsList)); // Check items within
-          verify(
-            () => mockDataClient.readAllByQuery(
-              mockQuery,
-              userId: null,
-              startAfterId: null,
-              limit: null,
-              sortBy: null,
-              sortOrder: null,
-            ),
-          ).called(1);
-        },
-      );
-
-      test(
-        'should rethrow HtHttpException when client.readAllByQuery throws',
-        () async {
-          // Arrange
-          const badRequestException = BadRequestException('Invalid query');
-          when(
-            () => mockDataClient.readAllByQuery(
-              any(),
-              userId: any(named: 'userId'),
-              startAfterId: any(named: 'startAfterId'),
-              limit: any(named: 'limit'),
-              sortBy: any(named: 'sortBy'),
-              sortOrder: any(named: 'sortOrder'),
-            ),
-          ).thenThrow(badRequestException);
-
-          // Act & Assert
-          expect(
-            () => repository.readAllByQuery(mockQuery),
-            throwsA(isA<HtHttpException>()),
-          );
-          verify(
-            () => mockDataClient.readAllByQuery(
-              mockQuery,
-              userId: null,
-              startAfterId: null,
-              limit: null,
-              sortBy: null,
-              sortOrder: null,
-            ),
-          ).called(1);
-        },
-      );
-
-      test(
-        'should rethrow FormatException when client.readAllByQuery throws',
-        () async {
-          // Arrange
-          when(
-            () => mockDataClient.readAllByQuery(
-              any(),
-              userId: any(named: 'userId'),
-              startAfterId: any(named: 'startAfterId'),
-              limit: any(named: 'limit'),
-              sortBy: any(named: 'sortBy'),
-              sortOrder: any(named: 'sortOrder'),
-            ),
-          ).thenThrow(mockFormatException);
-
-          // Act & Assert
-          expect(
-            () => repository.readAllByQuery(mockQuery),
-            throwsA(isA<FormatException>()),
-          );
-          verify(
-            () => mockDataClient.readAllByQuery(
-              mockQuery,
-              userId: null,
-              startAfterId: null,
-              limit: null,
-              sortBy: null,
-              sortOrder: null,
+              filter: null,
+              pagination: null,
+              sort: null,
             ),
           ).called(1);
         },
