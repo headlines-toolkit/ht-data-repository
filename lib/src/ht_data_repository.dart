@@ -139,15 +139,9 @@ class HtDataRepository<T> {
   /// total count as an integer.
   ///
   /// Re-throws any [HtHttpException] or [FormatException] from the client.
-  Future<int> count({
-    String? userId,
-    Map<String, dynamic>? filter,
-  }) async {
+  Future<int> count({String? userId, Map<String, dynamic>? filter}) async {
     try {
-      final response = await _dataClient.count(
-        userId: userId,
-        filter: filter,
-      );
+      final response = await _dataClient.count(userId: userId, filter: filter);
       return response.data;
     } on HtHttpException {
       rethrow;

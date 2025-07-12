@@ -79,8 +79,10 @@ void main() {
     final mockAggregateResult = <Map<String, dynamic>>[
       {'_id': 'A', 'count': 5},
     ];
-    final mockSuccessResponseAggregate =
-        SuccessApiResponse(data: mockAggregateResult, metadata: mockMetadata);
+    final mockSuccessResponseAggregate = SuccessApiResponse(
+      data: mockAggregateResult,
+      metadata: mockMetadata,
+    );
 
     final mockQuery = {'category': 'test'};
     const mockHttpException = NotFoundException('Item not found');
@@ -459,8 +461,7 @@ void main() {
     });
 
     group('count', () {
-      test('should call client.count and return the unwrapped count',
-          () async {
+      test('should call client.count and return the unwrapped count', () async {
         // Arrange
         when(
           () => mockDataClient.count(
@@ -479,8 +480,7 @@ void main() {
         ).called(1);
       });
 
-      test('should rethrow HtHttpException when client.count throws',
-          () async {
+      test('should rethrow HtHttpException when client.count throws', () async {
         // Arrange
         when(
           () => mockDataClient.count(
@@ -490,14 +490,10 @@ void main() {
         ).thenThrow(mockHttpException);
 
         // Act & Assert
-        expect(
-          () => repository.count(),
-          throwsA(isA<HtHttpException>()),
-        );
+        expect(() => repository.count(), throwsA(isA<HtHttpException>()));
       });
 
-      test('should rethrow FormatException when client.count throws',
-          () async {
+      test('should rethrow FormatException when client.count throws', () async {
         // Arrange
         when(
           () => mockDataClient.count(
@@ -507,67 +503,72 @@ void main() {
         ).thenThrow(mockFormatException);
 
         // Act & Assert
-        expect(
-          () => repository.count(),
-          throwsA(isA<FormatException>()),
-        );
+        expect(() => repository.count(), throwsA(isA<FormatException>()));
       });
     });
 
     group('aggregate', () {
-      test('should call client.aggregate and return the unwrapped result',
-          () async {
-        // Arrange
-        when(
-          () => mockDataClient.aggregate(
-            pipeline: any(named: 'pipeline'),
-            userId: any(named: 'userId'),
-          ),
-        ).thenAnswer((_) async => mockSuccessResponseAggregate);
+      test(
+        'should call client.aggregate and return the unwrapped result',
+        () async {
+          // Arrange
+          when(
+            () => mockDataClient.aggregate(
+              pipeline: any(named: 'pipeline'),
+              userId: any(named: 'userId'),
+            ),
+          ).thenAnswer((_) async => mockSuccessResponseAggregate);
 
-        // Act
-        final result =
-            await repository.aggregate(pipeline: mockAggregatePipeline);
-
-        // Assert
-        expect(result, mockAggregateResult);
-        verify(
-          () => mockDataClient.aggregate(
+          // Act
+          final result = await repository.aggregate(
             pipeline: mockAggregatePipeline,
-            userId: null,
-          ),
-        ).called(1);
-      });
+          );
 
-      test('should rethrow HtHttpException when client.aggregate throws',
-          () async {
-        // Arrange
-        when(
-          () => mockDataClient.aggregate(
-            pipeline: any(named: 'pipeline'),
-            userId: any(named: 'userId'),
-          ),
-        ).thenThrow(mockHttpException);
+          // Assert
+          expect(result, mockAggregateResult);
+          verify(
+            () => mockDataClient.aggregate(
+              pipeline: mockAggregatePipeline,
+              userId: null,
+            ),
+          ).called(1);
+        },
+      );
 
-        // Act & Assert
-        expect(
-          () => repository.aggregate(pipeline: mockAggregatePipeline),
-          throwsA(isA<HtHttpException>()),
-        );
-      });
+      test(
+        'should rethrow HtHttpException when client.aggregate throws',
+        () async {
+          // Arrange
+          when(
+            () => mockDataClient.aggregate(
+              pipeline: any(named: 'pipeline'),
+              userId: any(named: 'userId'),
+            ),
+          ).thenThrow(mockHttpException);
 
-      test('should rethrow FormatException when client.aggregate throws',
-          () async {
-        // Arrange
-        when(() => mockDataClient.aggregate(pipeline: any(named: 'pipeline')))
-            .thenThrow(mockFormatException);
+          // Act & Assert
+          expect(
+            () => repository.aggregate(pipeline: mockAggregatePipeline),
+            throwsA(isA<HtHttpException>()),
+          );
+        },
+      );
 
-        // Act & Assert
-        expect(
-          () => repository.aggregate(pipeline: mockAggregatePipeline),
-          throwsA(isA<FormatException>()),
-        );
-      });
+      test(
+        'should rethrow FormatException when client.aggregate throws',
+        () async {
+          // Arrange
+          when(
+            () => mockDataClient.aggregate(pipeline: any(named: 'pipeline')),
+          ).thenThrow(mockFormatException);
+
+          // Act & Assert
+          expect(
+            () => repository.aggregate(pipeline: mockAggregatePipeline),
+            throwsA(isA<FormatException>()),
+          );
+        },
+      );
     });
   });
 }
