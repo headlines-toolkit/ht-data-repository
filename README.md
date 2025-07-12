@@ -38,6 +38,8 @@ dependencies:
 *   **CRUD Operations:** Supports standard Create, Read (`Future<T>`), Update (`Future<T>`), and Delete (`Future<void>`) operations for a generic type `T`. These methods now accept an optional `String? userId`.
 *   **Advanced Querying:** A single `readAll` method returns a `Future<PaginatedResponse<T>>` and supports rich filtering, multi-field sorting, and cursor-based pagination, aligning with modern NoSQL database capabilities.
 *   **Error Propagation:** Catches and re-throws exceptions (like `HtHttpException` subtypes or `FormatException`) from the data client layer, allowing higher layers to handle them appropriately.
+*   **Counting and Aggregation:** Exposes `count` for efficient document
+    counting and `aggregate` for executing complex data pipelines.
 *   **Dependency Injection:** Designed to receive an `HtDataClient<T>` instance via its constructor.
 
 ## Usage
@@ -99,6 +101,26 @@ Future<void> exampleUsage() async {
       sort: sort,
     );
     print('Found ${queriedItemsResponse.items.length} items matching filter for user $userId.');
+
+    // Count items for a user
+    final count = await myDataRepository.count(
+      userId: userId,
+      filter: {'status': 'published'},
+    );
+    print('User has $count published items.');
+
+    // Aggregate data for a user
+    final pipeline = [
+      {
+        r'$group': {'_id': r'$category', 'total': {r'$sum': 1}},
+      },
+      {
+        r'$sort': {'total': -1},
+      },
+    ];
+    final aggregateResult =
+        await myDataRepository.aggregate(pipeline: pipeline, userId: userId);
+    print('Aggregation result: $aggregateResult');
 
     // Update an item for a specific user
     final updatedItemData = MyData(id: createdItem.id, name: 'Updated Name');
