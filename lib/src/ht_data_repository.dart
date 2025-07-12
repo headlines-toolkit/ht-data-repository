@@ -131,4 +131,52 @@ class HtDataRepository<T> {
       rethrow;
     }
   }
+
+  /// Counts the number of resource items matching the given criteria by
+  /// delegating to the client.
+  ///
+  /// Unwraps the [SuccessApiResponse] from the client and returns the
+  /// total count as an integer.
+  ///
+  /// Re-throws any [HtHttpException] or [FormatException] from the client.
+  Future<int> count({
+    String? userId,
+    Map<String, dynamic>? filter,
+  }) async {
+    try {
+      final response = await _dataClient.count(
+        userId: userId,
+        filter: filter,
+      );
+      return response.data;
+    } on HtHttpException {
+      rethrow;
+    } on FormatException {
+      rethrow;
+    }
+  }
+
+  /// Executes a complex aggregation pipeline on the data source by delegating
+  /// to the client.
+  ///
+  /// Unwraps the [SuccessApiResponse] from the client and returns the
+  /// resulting list of documents.
+  ///
+  /// Re-throws any [HtHttpException] or [FormatException] from the client.
+  Future<List<Map<String, dynamic>>> aggregate({
+    required List<Map<String, dynamic>> pipeline,
+    String? userId,
+  }) async {
+    try {
+      final response = await _dataClient.aggregate(
+        pipeline: pipeline,
+        userId: userId,
+      );
+      return response.data;
+    } on HtHttpException {
+      rethrow;
+    } on FormatException {
+      rethrow;
+    }
+  }
 }
