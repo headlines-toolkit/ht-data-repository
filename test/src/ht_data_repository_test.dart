@@ -67,6 +67,20 @@ void main() {
       data: mockPaginatedResponse,
       metadata: mockMetadata,
     );
+    final mockSuccessResponseCount = SuccessApiResponse(
+      data: 10,
+      metadata: mockMetadata,
+    );
+    final mockAggregatePipeline = [
+      <String, dynamic>{
+        r'$group': {'_id': r'$category', 'count': 1},
+      },
+    ];
+    final mockAggregateResult = <Map<String, dynamic>>[
+      {'_id': 'A', 'count': 5},
+    ];
+    final mockSuccessResponseAggregate =
+        SuccessApiResponse(data: mockAggregateResult, metadata: mockMetadata);
 
     final mockQuery = {'category': 'test'};
     const mockHttpException = NotFoundException('Item not found');
@@ -82,6 +96,7 @@ void main() {
       registerFallbackValue(SortOrder.asc);
       registerFallbackValue(const PaginationOptions());
       registerFallbackValue(<SortOption>[]);
+      registerFallbackValue(<Map<String, dynamic>>[]);
 
       mockDataClient = MockHtDataClient();
       repository = HtDataRepository<_MockData>(dataClient: mockDataClient);
@@ -441,6 +456,118 @@ void main() {
 
       // Note: delete typically doesn't involve FormatException unless the client
       // implementation has unusual behavior, so we omit that test case here.
+    });
+
+    group('count', () {
+      test('should call client.count and return the unwrapped count',
+          () async {
+        // Arrange
+        when(
+          () => mockDataClient.count(
+            userId: any(named: 'userId'),
+            filter: any(named: 'filter'),
+          ),
+        ).thenAnswer((_) async => mockSuccessResponseCount);
+
+        // Act
+        final result = await repository.count(filter: mockQuery);
+
+        // Assert
+        expect(result, 10);
+        verify(
+          () => mockDataClient.count(userId: null, filter: mockQuery),
+        ).called(1);
+      });
+
+      test('should rethrow HtHttpException when client.count throws',
+          () async {
+        // Arrange
+        when(
+          () => mockDataClient.count(
+            userId: any(named: 'userId'),
+            filter: any(named: 'filter'),
+          ),
+        ).thenThrow(mockHttpException);
+
+        // Act & Assert
+        expect(
+          () => repository.count(),
+          throwsA(isA<HtHttpException>()),
+        );
+      });
+
+      test('should rethrow FormatException when client.count throws',
+          () async {
+        // Arrange
+        when(
+          () => mockDataClient.count(
+            userId: any(named: 'userId'),
+            filter: any(named: 'filter'),
+          ),
+        ).thenThrow(mockFormatException);
+
+        // Act & Assert
+        expect(
+          () => repository.count(),
+          throwsA(isA<FormatException>()),
+        );
+      });
+    });
+
+    group('aggregate', () {
+      test('should call client.aggregate and return the unwrapped result',
+          () async {
+        // Arrange
+        when(
+          () => mockDataClient.aggregate(
+            pipeline: any(named: 'pipeline'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => mockSuccessResponseAggregate);
+
+        // Act
+        final result =
+            await repository.aggregate(pipeline: mockAggregatePipeline);
+
+        // Assert
+        expect(result, mockAggregateResult);
+        verify(
+          () => mockDataClient.aggregate(
+            pipeline: mockAggregatePipeline,
+            userId: null,
+          ),
+        ).called(1);
+      });
+
+      test('should rethrow HtHttpException when client.aggregate throws',
+          () async {
+        // Arrange
+        when(
+          () => mockDataClient.aggregate(
+            pipeline: any(named: 'pipeline'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockHttpException);
+
+        // Act & Assert
+        expect(
+          () => repository.aggregate(pipeline: mockAggregatePipeline),
+          throwsA(isA<HtHttpException>()),
+        );
+      });
+
+      test('should rethrow FormatException when client.aggregate throws',
+          () async {
+        // Arrange
+        when(() => mockDataClient.aggregate(pipeline: any(named: 'pipeline')))
+            .thenThrow(mockFormatException);
+
+        // Act & Assert
+        expect(
+          () => repository.aggregate(pipeline: mockAggregatePipeline),
+          throwsA(isA<FormatException>()),
+        );
+      });
     });
   });
 }
